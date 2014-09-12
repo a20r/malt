@@ -1,4 +1,4 @@
-malt
+Malt
 ====
 
-MALT: A Multi-agent source localization toolkit
+Malt: A Multi-agent source localization toolkit
