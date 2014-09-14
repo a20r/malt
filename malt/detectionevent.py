@@ -55,7 +55,7 @@ class DetectionEvent(object):
             "DetectionEvent(x=" + str(self.x) +
             ", y=" + str(self.y) +
             ", confidence=" + str(self.confidence) +
-            ", spl=" + str(self.spl) + ")"
+            ", intensity=" + str(self.intensity) + ")"
         )
 
     def __str__(self):

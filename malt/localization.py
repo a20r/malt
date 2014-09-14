@@ -8,7 +8,7 @@ import sklearn.cluster as clustering  # AffinityPropagation
 import numpy as np
 
 
-STD_SCALE = 1.4
+STD_SCALE = 30
 MIN_DIST = 5  # minimum distance between sources
 
 # Special distance uncertainty threshold in meters
@@ -17,11 +17,11 @@ DISTANCE_THRESHOLD = 2
 
 
 def distance_from_source(r_ref, l_ref, l_current):
-    return r_ref * math.pow(10, math.abs(l_ref - l_current) / 20.0)
+    return r_ref * math.pow(10, abs(l_ref - l_current) / 20.0)
 
 
 def intensity_at_distance(r_ref, l_ref, r_des):
-    return l_ref - math.abs(20.0 * math.log10(r_ref / r_des))
+    return l_ref - abs(20.0 * math.log10(r_ref / r_des))
 
 
 def distance_from_detection_event(x, y, node_event):
@@ -66,15 +66,7 @@ def set_node_events_std(node_events):
         node_event.set_std(STD_SCALE / (node_event.confidence + time_error))
 
 
-def position_evaluation(x, y, r_ref, l_ref, node_events):
-    """
-
-    Evaluation function to deterimine with some weight, where a source is
-    located in the mesh network of nodes. Given an x and y, this returns
-    a weight. The higher the weight, the higher the likelihood that the
-    source originated from x and y.
-
-    """
+def position_probability(x, y, r_ref, l_ref, node_events):
 
     set_node_events_std(node_events)
     pos_eval = 0.0
@@ -88,22 +80,8 @@ def position_evaluation(x, y, r_ref, l_ref, node_events):
     return pos_eval
 
 
-def position_probability(x, y, r_ref, l_ref, node_events):
-    """
-
-    Scales the evaluation function so it returns a probability (i.e. a float
-    between 0 and 1 inclusive) that a given x and y is where a sample source
-    originated from
-
-    """
-
-    return position_evaluation(x, y, r_ref, l_ref, node_events)\
-        / float(len(node_events))
-
-
 def determine_source_position_list(r_ref, l_ref, node_events, **kwargs):
     """
-
     Determines a list of possible positions of where the source will be
     located. These positions are determined by changing iterating through
     the list of node events and optimizing the probability density function
@@ -113,7 +91,7 @@ def determine_source_position_list(r_ref, l_ref, node_events, **kwargs):
     """
 
     p_func = lambda v: -1 * position_probability(
-        v[0], v[-1], r_ref, l_ref, node_events
+        v[0], v[1], r_ref, l_ref, node_events
     )
 
     max_list = [
@@ -121,7 +99,10 @@ def determine_source_position_list(r_ref, l_ref, node_events, **kwargs):
         for ne in node_events
     ]
 
-    max_vals = [(Point(x, y), -z) for (x, y), z, _, _, _ in max_list]
+    max_vals = list()
+
+    for (x, y), z, _, _, _ in max_list:
+        max_vals.append((Point(x, y), -z))
 
     return max_vals
 
