@@ -18,12 +18,12 @@ DISTANCE_THRESHOLD = 2
 
 def distance_from_source(r_ref, l_ref, l_current):
     # return r_ref * math.pow(10, abs(l_ref - l_current) / 20.0)
-    return r_ref * l_ref / l_current
+    return r_ref * l_ref / l_current - 0.0001
 
 
 def intensity_at_distance(r_ref, l_ref, r_des):
     # return l_ref - abs(20.0 * math.log10(r_ref / r_des))
-    return r_ref * l_ref / r_des
+    return r_ref * l_ref / (r_des + 0.0001)
 
 
 def distance_from_detection_event(x, y, node_event):
@@ -297,17 +297,17 @@ def determine_source_locations(r_ref, l_ref, node_events, **kwargs):
 
     location_list = list()
 
-    for event_list in node_event_associations.values():
-        r_opt, l_opt = determine_reference_data(
-            r_ref, l_ref,
-            event_list,
-            **kwargs
-        )
+    # for event_list in node_event_associations.values():
+    r_opt, l_opt = determine_reference_data(
+        r_ref, l_ref,
+        node_events,
+        **kwargs
+    )
 
-        location_list += determine_source_locations_instance(
-            r_opt, l_opt,
-            event_list,
-            **kwargs
-        )
+    location_list += determine_source_locations_instance(
+        r_opt, l_opt,
+        node_events,
+        **kwargs
+    )
 
     return location_list

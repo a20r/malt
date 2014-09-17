@@ -15,7 +15,7 @@ class TriangulationTest(unittest.TestCase):
             x_dim=100,
             y_dim=100,
             randomly_generate=True,
-            num_nodes=5,
+            num_nodes=10,
             time_noise=2,
             intensity_noise=0.1,
             confidence_noise=0.1
@@ -30,7 +30,7 @@ class TriangulationTest(unittest.TestCase):
         print "Locations:", res
         print "Error:", local_instance.get_error(), "m"
 
-        local_instance.plot()
+        # local_instance.plot()
 
 if __name__ == "__main__":
 
