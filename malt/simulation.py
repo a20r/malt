@@ -35,9 +35,13 @@ class Simulation(object):
         for node_pos in self.node_positions:
             dist = pos.dist_to(node_pos)
 
-            node_intensity = localization.intensity_at_distance(
+            intensity_noise = random.gauss(0, self.intensity_noise)
+            intensity = localization.intensity_at_distance(
                 r_ref, l_ref, dist
-            ) + random.gauss(0, self.intensity_noise)
+            ) + intensity_noise
+            node_intensity = intensity_noise * intensity + intensity
+
+            # print 100 * abs(node_intensity - intensity) / intensity
 
             confidence = 1 - random.gauss(0, self.confidence_noise)
             timestamp = time.time() - random.gauss(0, self.time_noise)
@@ -64,6 +68,7 @@ class LocalInstance(object):
         self.y_dim = kwargs.get("y_dim")
         self.v_num = 100
         self.pos_sim = pos_sim
+        self.locations = None
 
     def get_detection_events(self):
         return self.node_events
@@ -73,8 +78,24 @@ class LocalInstance(object):
             self.r_ref, self.l_ref, self.node_events, disp=0
         )
 
+    def get_locations(self):
+        if self.locations is None:
+            self.locations = self.localize()
+
+        return self.locations
+
+    def get_error(self):
+        locations = self.get_locations()
+        max_local = None
+        for local in locations:
+            if max_local is None or\
+                    local.get_confidence() > max_local.get_confidence():
+                max_local = local
+
+        return max_local.get_position().dist_to(self.pos_sim)
+
     def plot(self):
-        locations = self.localize()
+        locations = self.get_locations()
         d_events = self.node_events
         fig = plt.figure("")
         ax = fig.add_subplot(111)

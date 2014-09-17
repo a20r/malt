@@ -8,7 +8,7 @@ import sklearn.cluster as clustering  # AffinityPropagation
 import numpy as np
 
 
-STD_SCALE = 30
+STD_SCALE = 40
 MIN_DIST = 5  # minimum distance between sources
 
 # Special distance uncertainty threshold in meters
@@ -17,11 +17,13 @@ DISTANCE_THRESHOLD = 2
 
 
 def distance_from_source(r_ref, l_ref, l_current):
-    return r_ref * math.pow(10, abs(l_ref - l_current) / 20.0)
+    # return r_ref * math.pow(10, abs(l_ref - l_current) / 20.0)
+    return r_ref * l_ref / l_current
 
 
 def intensity_at_distance(r_ref, l_ref, r_des):
-    return l_ref - abs(20.0 * math.log10(r_ref / r_des))
+    # return l_ref - abs(20.0 * math.log10(r_ref / r_des))
+    return r_ref * l_ref / r_des
 
 
 def distance_from_detection_event(x, y, node_event):
@@ -52,18 +54,28 @@ def set_node_events_std(node_events):
 
     max_time = 0
     min_time = node_events[0].get_timestamp()
+    max_intensity = 0
+    min_intensity = node_events[0].get_intensity()
+
     for node_event in node_events:
         if node_event.get_timestamp() > max_time:
             max_time = node_event.get_timestamp()
         elif node_event.get_timestamp() < min_time:
             min_time = node_event.get_timestamp()
 
+        if node_event.get_intensity() > max_intensity:
+            max_intensity = node_event.get_intensity()
+        if node_event.get_intensity() < min_intensity:
+            min_intensity = node_event.get_intensity()
+
     for node_event in node_events:
-        time_error = 1.0 - (
-            (max_time - node_event.get_timestamp()) /
-            (max_time - min_time + 1)
-        )
-        node_event.set_std(STD_SCALE / (node_event.confidence + time_error))
+        time_error = 1.0 - (max_time - node_event.get_timestamp())\
+            / (max_time - min_time + 1)
+        # intensity_error = (max_intensity - node_event.get_intensity())\
+            # / (max_intensity - min_intensity + 1)
+
+        error = (STD_SCALE / (node_event.confidence + time_error))
+        node_event.set_std(error)
 
 
 def position_probability(x, y, r_ref, l_ref, node_events):
