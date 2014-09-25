@@ -5,6 +5,7 @@ import random
 import localization
 import time
 import numpy as np
+import rospy
 from localinstance import LocalInstance
 from detectionevent import DetectionEvent
 
@@ -12,6 +13,7 @@ from detectionevent import DetectionEvent
 class Simulation(object):
 
     def __init__(self, **kwargs):
+        rospy.init_node("malt", anonymous=False)
         self.node_positions = kwargs.get("node_positions", list())
         self.intensity_noise = kwargs.get("intensity_noise", 0)
         self.position_noise = kwargs.get("position_noise", 0)
@@ -48,8 +50,6 @@ class Simulation(object):
             dist = pos.dist_to(node_pos)
 
             intensity_noise = self.get_area_noise(node_pos.x, node_pos.y)
-            # intensity_noise = random.gauss(0, self.intensity_noise)
-
             intensity = localization.intensity_at_distance(
                 r_ref, l_ref, dist
             ) + intensity_noise
@@ -69,6 +69,15 @@ class Simulation(object):
 
         return LocalInstance(r_ref, l_ref, pos, node_events, self)
 
+    def determine_velocity(self, local, err, i):
+        # r_dir = random.random() * 2 * math.pi
+        max_pos = local.get_max_location().get_position()
+        unscaled_vel = max_pos - self.node_positions[i]
+        # r_vel = point.Point(math.cos(r_dir), math.sin(r_dir))
+        s_vel = unscaled_vel.to_unit_vector()
+        vel = s_vel * (0.1 * err)
+        return vel
+
     def step(self, x, y, r_ref, l_ref):
         local = self.provide_stimulus(x, y, r_ref, l_ref)
         max_location = local.get_max_location()
@@ -80,11 +89,7 @@ class Simulation(object):
                 r_ref, l_ref, node_event.get_intensity()
             )
             err = abs(r_dist - e_dist)
-            r_dir = random.random() * 2 * math.pi
-            vel = point.Point(
-                err * math.cos(r_dir),
-                err * math.sin(r_dir)
-            )
+            vel = self.determine_velocity(local, err, i)
 
             self.node_positions[i] = self.node_positions[i] + vel
 
