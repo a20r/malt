@@ -66,10 +66,15 @@ class Point(object):
         )
 
     def __sub__(self, other):
+        if hasattr(other, "z"):
+            z = other.z
+        else:
+            z = 0
+
         return Point(
             self.x - other.x,
             self.y - other.y,
-            self.z - other.z
+            self.z - z
         )
 
     def __mul__(self, scalar):

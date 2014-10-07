@@ -75,12 +75,12 @@ class Drawer(object):
                 marker.pose.orientation.z = 0
                 marker.pose.position.x = position.x
                 marker.pose.position.y = position.y
-                marker.pose.position.z = 0
+                marker.pose.position.z = 3
                 marker.id = i
                 self.markers.append(marker)
         return self
 
-    def draw_source(self, position, color):
+    def draw_source(self, position, color, i):
         if not rospy.is_shutdown():
             marker = Marker()
             marker.header.frame_id = "/my_frame"
@@ -100,8 +100,8 @@ class Drawer(object):
             marker.pose.orientation.z = 0
             marker.pose.position.x = position.x
             marker.pose.position.y = position.y
-            marker.pose.position.z = 0
-            marker.id = -2
+            marker.pose.position.z = 3
+            marker.id = i
             self.markers.append(marker)
 
     def update(self):
