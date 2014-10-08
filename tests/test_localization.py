@@ -5,6 +5,7 @@ import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), ".."))
 
 import malt
+import rospy
 # import math
 
 
@@ -14,10 +15,7 @@ def test_evolving():
         y_dim=100,
         randomly_generate=True,
         num_nodes=10,
-        time_noise=2,
-        # intensity_noise=0.1,
         scene="scenes/s-1.out",
-        confidence_noise=0.1
     )
     dr = malt.Drawer(sim.x_dim, sim.y_dim)
     dr.draw_risk_grid(sim.scene).update()
@@ -48,4 +46,5 @@ def test_evolving():
         # local_instance.plot()
 
 if __name__ == "__main__":
+    rospy.init_node("malt_test", anonymous=False)
     test_evolving()

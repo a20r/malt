@@ -5,7 +5,6 @@ import random
 import localization
 import time
 import numpy as np
-import rospy
 from localinstance import LocalInstance
 from detectionevent import DetectionEvent
 
@@ -13,7 +12,6 @@ from detectionevent import DetectionEvent
 class Simulation(object):
 
     def __init__(self, **kwargs):
-        rospy.init_node("malt", anonymous=False)
         self.node_positions = kwargs.get("node_positions", list())
         self.intensity_noise = kwargs.get("intensity_noise", 0)
         self.position_noise = kwargs.get("position_noise", 0)
@@ -71,7 +69,7 @@ class Simulation(object):
 
         return LocalInstance(r_ref, l_ref, pos, node_events, self)
 
-    def determine_velocity(self, local, node_event, rad=100):
+    def determine_velocity(self, local, node_event, rad=200):
         neighbours = self.get_node_neighbours(
             node_event, local.node_events, rad
         )
@@ -134,10 +132,30 @@ class Simulation(object):
         err = abs(r_dist - e_dist)
         return err
 
+    def inside_workspace(self, node_pos):
+        if node_pos.x < 0:
+            return False
+        if node_pos.y < 0:
+            return False
+        if node_pos.x > self.x_dim:
+            return False
+        if node_pos.y > self.y_dim:
+            return False
+
+        return True
+
+    def vel_to_center(self, node_pos):
+        return (point.Point(self.x_dim / 2, self.y_dim / 2) - node_pos)\
+            .to_unit_vector()
+
     def step(self, x, y, r_ref, l_ref):
         self.num_iter += 1
         local = self.provide_stimulus(x, y, r_ref, l_ref)
         for i, node_event in enumerate(local.node_events):
             vel = self.determine_velocity(local, node_event)
-            self.node_positions[i] = self.node_positions[i] + vel
+            if self.inside_workspace(self.node_positions[i] + vel):
+                self.node_positions[i] = self.node_positions[i] + vel
+            else:
+                self.node_positions[i] = self.node_position[i]\
+                    + self.vel_to_center(self.node_position[i])
         return local
