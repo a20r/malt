@@ -11,19 +11,19 @@ import rospy
 
 def test_evolving():
     sim = malt.Simulation(
-        x_dim=100,
-        y_dim=100,
+        x_dim=200,
+        y_dim=200,
         randomly_generate=True,
-        num_nodes=10,
-        scene="scenes/s-1.out",
+        num_nodes=40,
+        scene="scenes/200.out",
     )
     dr = malt.Drawer(sim.x_dim, sim.y_dim)
     dr.draw_risk_grid(sim.scene).update()
 
-    r_ref = 1
+    r_ref = 100
     l_ref = 100
-    src_x = 30
-    src_y = 80
+    src_x = 20
+    src_y = 20
 
     for i in xrange(200):
         local_instance = sim.step(src_x, src_y, r_ref, l_ref)

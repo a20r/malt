@@ -11,9 +11,9 @@ import time
 
 r_ref = 1
 l_ref = 100
-num_nodes = [5, 10, 15, 20, 25]
+num_nodes = [10, 20, 30, 40, 50, 60]
 num_runs = 50
-num_iters = 200
+num_iters = 400
 out_file = "data/{}_{}_{}.txt"
 
 
